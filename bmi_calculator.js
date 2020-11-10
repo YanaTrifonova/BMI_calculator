@@ -14,12 +14,12 @@ async function main() {
         1 - I want to know if I am overweight or not, so I can be informed.
         2 - I want to know what my ideal weight is, so I have a target I can work towards.
         3 - I want to trying to lose weight and to know how many calories I should eat everyday, so I can make progress towards my weight goal.
-        4 - I want to trying to lose weight and have a timeline in which I can reach my weight goal, so I can make a plan.`);
+        4 - I want to trying to lose/gain weight and have a timeline in which I can reach my weight goal, so I can make a plan.`);
 
         await programChooser();
     }
 
-    io.write('Hopefully see you soon!');
+    io.write('Hopefully see you soon! Goodbye!');
 }
 
 async function programChooser() {
@@ -102,7 +102,7 @@ async function checkTimelineForWeightGoal() {
     let hasDailyExercise = await getDailyExercise();
     let userGender = await getUserGender();
 
-    let weightDelta = userWeight - userPerfectWeight;
+    let weightDelta = Math.abs(userWeight - userPerfectWeight);
 
     let bmr = getBMR(userWeight, userHeight, userAge, userGender);
     let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise);
