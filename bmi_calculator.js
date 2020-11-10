@@ -124,22 +124,22 @@ async function isUserWantToContinue() {
 
 async function getWeight() {
     io.write('What is your weight in kilograms?');
-    return parseFloat(await io.read());
+    return numberRetriever('It is not a number. Please enter your weight in kilograms.');
 }
 
 async function getHeight() {
     io.write('What is your height in meters?');
-    return parseFloat(await io.read());
+    return numberRetriever('It is not a number. Please enter your height in meters.');
 }
 
 async function getUserAge() {
     io.write('What is your age in years?');
-    return parseInt(await io.read());
+    return numberRetriever('It is not a number. Please enter your age.');
 }
 
 async function getUserPerfectWeight() {
     io.write('What is weight that you want to achieve in kilograms?');
-    return parseFloat(await io.read());
+    return numberRetriever('It is not a number. Please enter a weight that you want to achieve in kilograms.');
 }
 
 async function getDailyExercise() {
@@ -168,7 +168,7 @@ function getUserIdealWeight(perfectBMI, userHeight) {
 function getBMR(userWeight, userHeight, userAge, userGender) {
     return userGender ?
         10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge + 50 :
-        userWeight + 6.25 * userHeight * 100 - 5 * userAge - 150;
+        10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge - 150;
 }
 
 function getNumbersOfWeeks(weightDelta) {
@@ -176,7 +176,7 @@ function getNumbersOfWeeks(weightDelta) {
 }
 
 function getNumberOfDailyCalories(bmr, hasDailyExercise) {
-    return hasDailyExercise ? (bmr * 1.4).toFixed(2) : (bmr * 1.6).toFixed(2) ;
+    return hasDailyExercise ? (bmr * 1.4).toFixed(2) : (bmr * 1.6).toFixed(2);
 }
 
 async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOptions) {
@@ -185,20 +185,36 @@ async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOpt
     while (!isAnswerCorrect) {
         let answer = await io.read();
 
-        positiveOptions.forEach((option) => {
+        for (let option of positiveOptions) {
             if (option === answer) {
                 isAnswerCorrect = true;
                 return true;
             }
-        });
+        }
 
-        negativeOptions.forEach((option) => {
+        for (let option of negativeOptions) {
             if (option === answer) {
                 isAnswerCorrect = true;
                 return false;
             }
-        });
+        }
 
         io.write(errorMessage);
+    }
+}
+
+async function numberRetriever(errorMessage) {
+    let isAnswerCorrect = false;
+
+    while (!isAnswerCorrect) {
+        let answer = await io.read();
+        let value = parseFloat(answer);
+
+        if (!isNaN(value)) {
+            isAnswerCorrect = true;
+            return value;
+        } else {
+            io.write(errorMessage);
+        }
     }
 }
