@@ -85,9 +85,10 @@ async function checkNumberOfDailyCalories() {
     let userHeight = await getHeight();
     let userAge = await getUserAge();
     let hasDailyExercise = await getDailyExercise();
+    let userGender = await getUserGender();
 
-    let bmr = getBMR(userWeight, userHeight, userAge);
-    let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise)
+    let bmr = getBMR(userWeight, userHeight, userAge, userGender);
+    let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise);
 
     io.write(`With a normal lifestyle you burn ${numberOfDailyCalories} calories a day.`);
 }
@@ -98,9 +99,14 @@ async function checkTimelineForWeightGoal() {
     let userHeight = await getHeight();
     let userAge = await getUserAge();
     let userPerfectWeight = await getUserPerfectWeight();
+    let hasDailyExercise = await getDailyExercise();
+    let userGender = await getUserGender();
 
     let weightDelta = userWeight - userPerfectWeight;
-    let numberOfDailyCaloriesToLooseWeight = getBMR(userWeight, userHeight, userAge) * 1.6 - deltaForWeightLoosing;
+
+    let bmr = getBMR(userWeight, userHeight, userAge, userGender);
+    let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise);
+    let numberOfDailyCaloriesToLooseWeight = numberOfDailyCalories - deltaForWeightLoosing;
 
     let numbersOfWeeksToAchieveTheWeightGoal = getNumbersOfWeeks(weightDelta);
 
@@ -111,7 +117,9 @@ async function checkTimelineForWeightGoal() {
 
 async function isUserWantToContinue() {
     io.write('Do you want to check another program? [y/n]');
-    return yesOrNoRetriever('Please answer if you would like to continue and choose another program [y/n]');
+    return optionsRetriever('Please answer if you would like to continue and choose another program [y/n]',
+        ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
+        ['n', 'no', 'nope', 'not', 'N', 'No']);
 }
 
 async function getWeight() {
@@ -136,7 +144,17 @@ async function getUserPerfectWeight() {
 
 async function getDailyExercise() {
     io.write('Do you exercise daily [y/n]?');
-    return yesOrNoRetriever('Please tell if you exercise every day [y/n]');
+    return optionsRetriever('Please tell if you exercise every day [y/n].',
+        ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
+        ['n', 'no', 'nope', 'not', 'N', 'No']);
+}
+
+async function getUserGender() {
+    io.write('What is your gender [m/f]?');
+    return optionsRetriever('Please tell us if you male or female [m/f].',
+        ['m', 'male', 'M', 'Male'],
+        ['f', 'female', 'F', "Female"])
+
 }
 
 function getBMI(userWeight, userHeight) {
@@ -147,8 +165,10 @@ function getUserIdealWeight(perfectBMI, userHeight) {
     return (perfectBMI * userHeight * userHeight).toFixed(2);
 }
 
-function getBMR(userWeight, userHeight, userAge) {
-    return 10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge;
+function getBMR(userWeight, userHeight, userAge, userGender) {
+    return userGender ?
+        10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge + 50 :
+        userWeight + 6.25 * userHeight * 100 - 5 * userAge - 150;
 }
 
 function getNumbersOfWeeks(weightDelta) {
@@ -156,24 +176,29 @@ function getNumbersOfWeeks(weightDelta) {
 }
 
 function getNumberOfDailyCalories(bmr, hasDailyExercise) {
-    return hasDailyExercise ? bmr * 1.4 : bmr * 1.6;
+    return hasDailyExercise ? (bmr * 1.4).toFixed(2) : (bmr * 1.6).toFixed(2) ;
 }
 
-async function yesOrNoRetriever(errorMessage) {
+async function optionsRetriever(errorMessage, option1, option2) {
     let isAnswerCorrect = false;
 
     while (!isAnswerCorrect) {
         let answer = await io.read();
 
-        if (answer === 'y' || answer === 'yes' || answer === 'ya' || answer === 'yep' || answer === 'Y' || answer === 'Yes') {
-            isAnswerCorrect = true;
-            return true;
-        } else if (answer === 'n' || answer === 'no' || answer === 'nope' || answer === 'not' || answer === 'N' || answer === 'No') {
-            isAnswerCorrect = true;
-            return false;
-        } else {
-            io.write(errorMessage);
-        }
+        option1.forEach((option) => {
+            if (option === answer) {
+                isAnswerCorrect = true;
+                return true;
+            }
+        });
+
+        option2.forEach((option) => {
+            if (option === answer) {
+                isAnswerCorrect = true;
+                return false;
+            }
+        });
+
+        io.write(errorMessage);
     }
 }
-
