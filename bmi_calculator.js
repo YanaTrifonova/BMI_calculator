@@ -77,7 +77,7 @@ async function checkIdealWeight() {
     let userHeight = await getHeight();
     let userIdealWeight = getUserIdealWeight(perfectBMI, userHeight);
 
-    io.write(`On the assumption that perfect BMI is ${perfectBMI} the ideal weight for your height is  ${userIdealWeight}.`);
+    io.write(`On the assumption that perfect BMI is ${perfectBMI} the ideal weight for your height is ${userIdealWeight}.`);
 }
 
 async function checkNumberOfDailyCalories() {
@@ -119,7 +119,8 @@ async function checkTimelineForWeightGoal() {
 
 async function isUserWantToContinue() {
     io.write('Do you want to check another program? [y/n]');
-    return binaryOptionsRetriever('Please answer if you would like to continue and choose another program [y/n]',
+    return binaryOptionsRetriever(
+        'Please answer if you would like to continue and choose another program [y/n]',
         ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
         ['n', 'no', 'nope', 'not', 'N', 'No']);
 }
@@ -180,17 +181,28 @@ function getUserIdealWeight(perfectBMI, userHeight) {
 }
 
 function getBMR(userWeight, userHeight, userAge, userGender) {
-    return userGender ?
-        10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge + 50 :
-        10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge - 150;
+    const userWeightConstant = 10;
+    const userHeightConstant = 625;
+    const maleUserAgeConstant = 50;
+    const femaleUserAgeConstant = 150;
+
+    return userGender
+        ? userWeightConstant * userWeight + userHeightConstant * userHeight - 5 * userAge + maleUserAgeConstant
+        : userWeightConstant * userWeight + userHeightConstant * userHeight - 5 * userAge - femaleUserAgeConstant;
 }
 
 function getNumbersOfWeeks(weightDelta) {
-    return weightDelta / 0.5;
+    const kilogramForDietWeek = 0.5;
+    return weightDelta / kilogramForDietWeek;
 }
 
 function getNumberOfDailyCalories(bmr, hasDailyExercise) {
-    return hasDailyExercise ? (bmr * 1.4).toFixed(2) : (bmr * 1.6).toFixed(2);
+    const dailyExerciseConst = 1.6;
+    const noDailyExerciseConst = 1.4;
+
+    return hasDailyExercise ?
+        (bmr * dailyExerciseConst).toFixed(2) :
+        (bmr * noDailyExerciseConst).toFixed(2);
 }
 
 async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOptions) {
@@ -219,8 +231,10 @@ async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOpt
 
 async function numberRetrier(errorTypeOfDataMessage, fraudDataMessage, measurement) {
     let isAnswerCorrect = false;
+    let value;
+
     while (!isAnswerCorrect) {
-        let value = await getValue(errorTypeOfDataMessage);
+        value = await getValue(errorTypeOfDataMessage);
         let isAnswerFraud = checkValue(value, measurement);
         if (isAnswerFraud) {
             io.write(fraudDataMessage);
@@ -228,6 +242,8 @@ async function numberRetrier(errorTypeOfDataMessage, fraudDataMessage, measureme
             isAnswerCorrect = true;
         }
     }
+
+    return value;
 }
 
 async function getValue(errorTypeOfDataMessage) {
@@ -258,7 +274,7 @@ function checkValue(value, measurement) {
             }
             break;
         case 'height' :
-            if (value <= 0 || value > 1.20) {
+            if (value <= 0 || value > 2.20) {
                 isAnswerFraud = true;
             }
             break;
