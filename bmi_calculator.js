@@ -117,7 +117,7 @@ async function checkTimelineForWeightGoal() {
 
 async function isUserWantToContinue() {
     io.write('Do you want to check another program? [y/n]');
-    return optionsRetriever('Please answer if you would like to continue and choose another program [y/n]',
+    return binaryOptionsRetriever('Please answer if you would like to continue and choose another program [y/n]',
         ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
         ['n', 'no', 'nope', 'not', 'N', 'No']);
 }
@@ -144,14 +144,14 @@ async function getUserPerfectWeight() {
 
 async function getDailyExercise() {
     io.write('Do you exercise daily [y/n]?');
-    return optionsRetriever('Please tell if you exercise every day [y/n].',
+    return binaryOptionsRetriever('Please tell if you exercise every day [y/n].',
         ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
         ['n', 'no', 'nope', 'not', 'N', 'No']);
 }
 
 async function getUserGender() {
     io.write('What is your gender [m/f]?');
-    return optionsRetriever('Please tell us if you male or female [m/f].',
+    return binaryOptionsRetriever('Please tell us if you male or female [m/f].',
         ['m', 'male', 'M', 'Male'],
         ['f', 'female', 'F', "Female"])
 
@@ -179,20 +179,20 @@ function getNumberOfDailyCalories(bmr, hasDailyExercise) {
     return hasDailyExercise ? (bmr * 1.4).toFixed(2) : (bmr * 1.6).toFixed(2) ;
 }
 
-async function optionsRetriever(errorMessage, option1, option2) {
+async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOptions) {
     let isAnswerCorrect = false;
 
     while (!isAnswerCorrect) {
         let answer = await io.read();
 
-        option1.forEach((option) => {
+        positiveOptions.forEach((option) => {
             if (option === answer) {
                 isAnswerCorrect = true;
                 return true;
             }
         });
 
-        option2.forEach((option) => {
+        negativeOptions.forEach((option) => {
             if (option === answer) {
                 isAnswerCorrect = true;
                 return false;
