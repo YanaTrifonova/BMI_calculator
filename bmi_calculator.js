@@ -102,16 +102,18 @@ async function checkTimelineForWeightGoal() {
     let hasDailyExercise = await getDailyExercise();
     let userGender = await getUserGender();
 
-    let weightDelta = Math.abs(userWeight - userPerfectWeight);
+    let weightDelta = userWeight - userPerfectWeight;
 
     let bmr = getBMR(userWeight, userHeight, userAge, userGender);
     let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise);
-    let numberOfDailyCaloriesToLooseWeight = numberOfDailyCalories - deltaForWeightLoosing;
+    let numberOfDailyCaloriesToAchieveGoal = weightDelta > 0 ?
+        numberOfDailyCalories - deltaForWeightLoosing :
+        numberOfDailyCalories + deltaForWeightLoosing;
 
-    let numbersOfWeeksToAchieveTheWeightGoal = getNumbersOfWeeks(weightDelta);
+    let numbersOfWeeksToAchieveTheWeightGoal = getNumbersOfWeeks(Math.abs(weightDelta));
 
     io.write(`If you want to reach your ideal weight of ${userPerfectWeight} kg:`);
-    io.write(`Eat ${numberOfDailyCaloriesToLooseWeight} calories a day`);
+    io.write(`Eat ${numberOfDailyCaloriesToAchieveGoal} calories a day`);
     io.write(`For ${numbersOfWeeksToAchieveTheWeightGoal} weeks.`);
 }
 
@@ -124,22 +126,34 @@ async function isUserWantToContinue() {
 
 async function getWeight() {
     io.write('What is your weight in kilograms?');
-    return numberRetriever('It is not a number. Please enter your weight in kilograms.');
+    return numberRetrier(
+        'It is not a number. Please enter your weight in kilograms.',
+        'Your weight seems to be incorrect for us. Please check and try enter your weight in kilograms again.',
+        'weight');
 }
 
 async function getHeight() {
     io.write('What is your height in meters?');
-    return numberRetriever('It is not a number. Please enter your height in meters.');
+    return numberRetrier(
+        'It is not a number. Please enter your height in meters.',
+        'Your height seems to be incorrect for us. Please check and try enter your height in meters again.',
+        'height');
 }
 
 async function getUserAge() {
     io.write('What is your age in years?');
-    return numberRetriever('It is not a number. Please enter your age.');
+    return numberRetrier(
+        'It is not a number. Please enter your height in meters.',
+        'Your age input seems to be incorrect for us. Please check and try enter your age again.',
+        'age');
 }
 
 async function getUserPerfectWeight() {
     io.write('What is weight that you want to achieve in kilograms?');
-    return numberRetriever('It is not a number. Please enter a weight that you want to achieve in kilograms.');
+    return numberRetrier(
+        'It is not a number. Please enter your weight in kilograms.',
+        'Your weight seems to be incorrect for us. Please check and try enter your weight in kilograms again.',
+        'weight');
 }
 
 async function getDailyExercise() {
@@ -203,18 +217,60 @@ async function binaryOptionsRetriever(errorMessage, positiveOptions, negativeOpt
     }
 }
 
-async function numberRetriever(errorMessage) {
+async function numberRetrier(errorTypeOfDataMessage, fraudDataMessage, measurement) {
     let isAnswerCorrect = false;
-
     while (!isAnswerCorrect) {
-        let answer = await io.read();
-        let value = parseFloat(answer);
-
-        if (!isNaN(value)) {
-            isAnswerCorrect = true;
-            return value;
+        let value = await getValue(errorTypeOfDataMessage);
+        let isAnswerFraud = checkValue(value, measurement);
+        if (isAnswerFraud) {
+            io.write(fraudDataMessage);
         } else {
-            io.write(errorMessage);
+            isAnswerCorrect = true;
         }
     }
 }
+
+async function getValue(errorTypeOfDataMessage) {
+    let isAnswerCorrect = false;
+    let value;
+
+    while (!isAnswerCorrect) {
+        let answer = await io.read();
+        value = parseFloat(answer);
+
+        if (!isNaN(value)) {
+            isAnswerCorrect = true;
+        } else {
+            io.write(errorTypeOfDataMessage);
+        }
+    }
+
+    return value;
+}
+
+function checkValue(value, measurement) {
+    let isAnswerFraud = false;
+
+    switch (measurement) {
+        case 'weight' :
+            if (value <= 0 || value > 120) {
+                isAnswerFraud = true;
+            }
+            break;
+        case 'height' :
+            if (value <= 0 || value > 1.20) {
+                isAnswerFraud = true;
+            }
+            break;
+        case 'age':
+            if (value <= 0 || value > 100) {
+                isAnswerFraud = true;
+            }
+            break;
+        default :
+            io.write('Error');
+    }
+
+    return isAnswerFraud;
+}
+
