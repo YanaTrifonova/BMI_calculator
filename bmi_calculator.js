@@ -84,8 +84,10 @@ async function checkNumberOfDailyCalories() {
     let userWeight = await getWeight();
     let userHeight = await getHeight();
     let userAge = await getUserAge();
+    let hasDailyExercise = await getDailyExercise();
 
-    let numberOfDailyCalories = getNumberOfDailyCalories(userWeight, userHeight, userAge);
+    let bmr = getBMR(userWeight, userHeight, userAge);
+    let numberOfDailyCalories = getNumberOfDailyCalories(bmr, hasDailyExercise)
 
     io.write(`With a normal lifestyle you burn ${numberOfDailyCalories} calories a day.`);
 }
@@ -98,7 +100,7 @@ async function checkTimelineForWeightGoal() {
     let userPerfectWeight = await getUserPerfectWeight();
 
     let weightDelta = userWeight - userPerfectWeight;
-    let numberOfDailyCaloriesToLooseWeight = getNumberOfDailyCalories(userWeight, userHeight, userAge) - deltaForWeightLoosing;
+    let numberOfDailyCaloriesToLooseWeight = getBMR(userWeight, userHeight, userAge) * 1.6 - deltaForWeightLoosing;
 
     let numbersOfWeeksToAchieveTheWeightGoal = getNumbersOfWeeks(weightDelta);
 
@@ -108,22 +110,8 @@ async function checkTimelineForWeightGoal() {
 }
 
 async function isUserWantToContinue() {
-    let isAnswerCorrect = false;
     io.write('Do you want to check another program? [y/n]');
-
-    while (!isAnswerCorrect) {
-        let answer = await io.read();
-
-        if (answer === 'y' || answer === 'yes' || answer === 'ya' || answer === 'yep' || answer === 'Y' || answer === 'Yes') {
-            isAnswerCorrect = true;
-            return true;
-        } else if (answer === 'n' || answer === 'no' || answer === 'nope' || answer === 'not' || answer === 'N' || answer === 'No') {
-            isAnswerCorrect = true;
-            return false;
-        } else {
-            io.write('Please answer if you would like to continue and choose another program [y/n]');
-        }
-    }
+    return yesOrNoRetriever('Please answer if you would like to continue and choose another program [y/n]');
 }
 
 async function getWeight() {
@@ -146,6 +134,11 @@ async function getUserPerfectWeight() {
     return parseFloat(await io.read());
 }
 
+async function getDailyExercise() {
+    io.write('Do you exercise daily [y/n]?');
+    return yesOrNoRetriever('Please tell if you exercise every day [y/n]');
+}
+
 function getBMI(userWeight, userHeight) {
     return (userWeight / (userHeight ** 2)).toFixed(2);
 }
@@ -154,10 +147,33 @@ function getUserIdealWeight(perfectBMI, userHeight) {
     return (perfectBMI * userHeight * userHeight).toFixed(2);
 }
 
-function getNumberOfDailyCalories(userWeight, userHeight, userAge) {
+function getBMR(userWeight, userHeight, userAge) {
     return 10 * userWeight + 6.25 * userHeight * 100 - 5 * userAge;
 }
 
 function getNumbersOfWeeks(weightDelta) {
     return weightDelta / 0.5;
 }
+
+function getNumberOfDailyCalories(bmr, hasDailyExercise) {
+    return hasDailyExercise ? bmr * 1.4 : bmr * 1.6;
+}
+
+async function yesOrNoRetriever(errorMessage) {
+    let isAnswerCorrect = false;
+
+    while (!isAnswerCorrect) {
+        let answer = await io.read();
+
+        if (answer === 'y' || answer === 'yes' || answer === 'ya' || answer === 'yep' || answer === 'Y' || answer === 'Yes') {
+            isAnswerCorrect = true;
+            return true;
+        } else if (answer === 'n' || answer === 'no' || answer === 'nope' || answer === 'not' || answer === 'N' || answer === 'No') {
+            isAnswerCorrect = true;
+            return false;
+        } else {
+            io.write(errorMessage);
+        }
+    }
+}
+
