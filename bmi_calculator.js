@@ -77,7 +77,8 @@ async function checkIdealWeight() {
     let userHeight = await getHeight();
     let userIdealWeight = getUserIdealWeight(perfectBMI, userHeight);
 
-    io.write(`On the assumption that perfect BMI is ${perfectBMI} the ideal weight for your height is ${userIdealWeight}.`);
+    io.write(
+        `On the assumption that perfect BMI is ${perfectBMI} the ideal weight for your height is ${userIdealWeight}.`);
 }
 
 async function checkNumberOfDailyCalories() {
@@ -122,7 +123,8 @@ async function isUserWantToContinue() {
     return binaryOptionsRetriever(
         'Please answer if you would like to continue and choose another program [y/n]',
         ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
-        ['n', 'no', 'nope', 'not', 'N', 'No']);
+        ['n', 'no', 'nope', 'not', 'N', 'No']
+    );
 }
 
 async function getWeight() {
@@ -130,7 +132,8 @@ async function getWeight() {
     return numberRetrier(
         'It is not a number. Please enter your weight in kilograms.',
         'Your weight seems to be incorrect for us. Please check and try enter your weight in kilograms again.',
-        'weight');
+        'weight'
+    );
 }
 
 async function getHeight() {
@@ -138,7 +141,8 @@ async function getHeight() {
     return numberRetrier(
         'It is not a number. Please enter your height in meters.',
         'Your height seems to be incorrect for us. Please check and try enter your height in meters again.',
-        'height');
+        'height'
+    );
 }
 
 async function getUserAge() {
@@ -146,7 +150,8 @@ async function getUserAge() {
     return numberRetrier(
         'It is not a number. Please enter your height in meters.',
         'Your age input seems to be incorrect for us. Please check and try enter your age again.',
-        'age');
+        'age'
+    );
 }
 
 async function getUserPerfectWeight() {
@@ -154,22 +159,26 @@ async function getUserPerfectWeight() {
     return numberRetrier(
         'It is not a number. Please enter your weight in kilograms.',
         'Your weight seems to be incorrect for us. Please check and try enter your weight in kilograms again.',
-        'weight');
+        'weight'
+    );
 }
 
 async function getDailyExercise() {
     io.write('Do you exercise daily [y/n]?');
-    return binaryOptionsRetriever('Please tell if you exercise every day [y/n].',
+    return binaryOptionsRetriever(
+        'Please tell if you exercise every day [y/n].',
         ['y', 'yes', 'ya', 'yep', 'Y', 'Yes'],
-        ['n', 'no', 'nope', 'not', 'N', 'No']);
+        ['n', 'no', 'nope', 'not', 'N', 'No']
+    );
 }
 
 async function getUserGender() {
     io.write('What is your gender [m/f]?');
-    return binaryOptionsRetriever('Please tell us if you male or female [m/f].',
+    return binaryOptionsRetriever(
+        'Please tell us if you male or female [m/f].',
         ['m', 'male', 'M', 'Male'],
-        ['f', 'female', 'F', "Female"])
-
+        ['f', 'female', 'F', "Female"]
+    )
 }
 
 function getBMI(userWeight, userHeight) {
