@@ -289,4 +289,3 @@ function checkValue(value, measurement) {
 
     return isAnswerFraud;
 }
-
